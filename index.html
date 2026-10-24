@@ -97,7 +97,6 @@
     </div>
 
     <form id="fbForm">
-        <!-- 1. Sterne-Bewertung -->
         <div class="card">
             <label>⭐ Wie gefällt dir Gagen-TV insgesamt?</label>
             <div class="stars" id="starContainer">
@@ -110,29 +109,24 @@
             <div class="star-hint" id="starText">Tippe auf die Sterne (optional)</div>
         </div>
 
-        <!-- 2. Was ist gut? -->
         <div class="card">
             <label for="fGood">👍 Was gefällt dir besonders gut?</label>
             <textarea id="fGood" maxlength="500" placeholder="z.B. Webcams, Gottesdienste, Abfuhrtermine, Gestaltung..."></textarea>
         </div>
 
-        <!-- 3. Was verbessern? -->
         <div class="card">
             <label for="fImprove">🔧 Was sollten wir verbessern?</label>
             <textarea id="fImprove" maxlength="500" placeholder="z.B. Schriftgröße, Standzeit einer Seite, Farben..."></textarea>
         </div>
 
-        <!-- 4. Neue Ideen -->
         <div class="card">
             <label for="fIdeas">💡 Hast du ganz neue Ideen oder Wünsche?</label>
             <textarea id="fIdeas" maxlength="500" placeholder="Welche Infos aus dem Ort fehlen dir noch im Programm?"></textarea>
         </div>
 
-        <!-- 5. Optionaler Name -->
         <div class="card">
             <label for="fName">👤 Dein Name oder Gruß (freiwillig)</label>
             <input type="text" id="fName" maxlength="80" placeholder="Leer lassen für anonymes Feedback">
-            <!-- Unsichtbarer Spam-Schutz (Honeypot) -->
             <input type="text" id="fWebsite" class="hp-field" tabindex="-1" autocomplete="off">
         </div>
 
@@ -174,11 +168,8 @@
 
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
-
-        // Honeypot-Check gegen Bots
         if (document.getElementById('fWebsite').value !== "") return;
 
-        // Einfache 60-Sekunden-Bremse gegen Mehrfachklicks
         const lastSent = parseInt(localStorage.getItem('gtv_fb_ts') || "0", 10);
         if (Date.now() - lastSent < 60000) {
             alert("Du hast gerade erst ein Feedback gesendet. Vielen Dank!");
@@ -197,6 +188,7 @@
 
         sendBtn.disabled = true;
         sendBtn.textContent = "Wird gesendet...";
+        msgBox.style.display = "none";
 
         const starsVisual = rating > 0 ? "⭐".repeat(rating) + ` (${rating}/5)` : "Keine Sterne gewählt";
         const lines = [
@@ -207,18 +199,16 @@
             `\n👤 Absender: ${name}`
         ].filter(Boolean).join("\n");
 
+        // CORS-Simple-Request über URL-Parameter (funktioniert auch mit strengem Brave-Shield/Safari)
+        const endpoint = `https://ntfy.sh/${encodeURIComponent(NTFY_TOPIC)}?title=${encodeURIComponent("Gagen-TV Zuschauerpost")}&tags=mailbox_with_mail,star&priority=default`;
+
         try {
-            const res = await fetch("https://ntfy.sh/" + NTFY_TOPIC, {
+            const res = await fetch(endpoint, {
                 method: "POST",
-                headers: {
-                    "Title": "Gagen-TV Zuschauerpost",
-                    "Tags": "mailbox_with_mail,star",
-                    "Priority": "default"
-                },
                 body: lines
             });
 
-            if (!res.ok) throw new Error("Server-Antwort " + res.status);
+            if (!res.ok) throw new Error("HTTP " + res.status);
 
             localStorage.setItem('gtv_fb_ts', String(Date.now()));
             form.style.display = "none";
