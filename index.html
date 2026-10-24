@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gagen-TV – Zuschauer-Feedback</title>
+    <style>
+        :root {
+            --bg-top: #1e1e2f;
+            --bg-bot: #10101a;
+            --card: #181824;
+            --accent: #4fc3f7;
+            --gold: #ffd54f;
+            --green: #66bb6a;
+            --text: #ebebeb;
+            --muted: #9e9e9e;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0; padding: 18px 14px 40px 14px;
+            background: linear-gradient(135deg, var(--bg-top), var(--bg-bot));
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .wrap { max-width: 480px; margin: 0 auto; }
+        .header {
+            text-align: center; margin-bottom: 18px; padding-bottom: 12px;
+            border-bottom: 2px solid rgba(79, 195, 247, 0.3);
+        }
+        .badge {
+            display: inline-block; background: rgba(79, 195, 247, 0.15);
+            color: var(--accent); font-size: 13px; font-weight: bold;
+            padding: 4px 10px; border-radius: 20px; margin-bottom: 6px;
+        }
+        h1 { margin: 4px 0; font-size: 24px; color: #fff; letter-spacing: 0.5px; }
+        .sub { font-size: 14px; color: var(--muted); margin: 0; }
+        .card {
+            background: var(--card); border-radius: 12px; padding: 16px;
+            margin-bottom: 14px; border: 1px solid #2a2a3c;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+        }
+        label {
+            display: block; font-size: 15px; font-weight: bold;
+            margin-bottom: 8px; color: #fff;
+        }
+        .stars {
+            display: flex; justify-content: space-between; gap: 6px;
+            padding: 4px 0;
+        }
+        .star-btn {
+            flex: 1; background: #222233; border: 2px solid #33334d;
+            border-radius: 10px; padding: 10px 0; font-size: 26px;
+            cursor: pointer; text-align: center; transition: 0.15s;
+            filter: grayscale(100%) opacity(0.45);
+        }
+        .star-btn.active {
+            filter: none; background: rgba(255, 213, 79, 0.15);
+            border-color: var(--gold); transform: scale(1.03);
+        }
+        .star-hint {
+            text-align: center; font-size: 13px; color: var(--gold);
+            margin-top: 8px; min-height: 18px; font-weight: bold;
+        }
+        textarea, input[type="text"] {
+            width: 100%; background: #101018; border: 1.5px solid #2f2f46;
+            border-radius: 8px; padding: 11px 12px; color: #fff;
+            font-size: 15px; font-family: inherit; resize: vertical;
+        }
+        textarea:focus, input[type="text"]:focus {
+            outline: none; border-color: var(--accent);
+        }
+        textarea { min-height: 76px; }
+        .hp-field { display: none !important; }
+        .submit-btn {
+            width: 100%; background: linear-gradient(180deg, #29b6f6, #0288d1);
+            color: #fff; border: none; border-radius: 10px;
+            padding: 15px; font-size: 17px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(2, 136, 209, 0.4);
+        }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status-msg {
+            display: none; text-align: center; padding: 22px 16px;
+            border-radius: 12px; margin-top: 10px; font-size: 16px;
+        }
+        .status-ok { background: rgba(102, 187, 106, 0.15); border: 2px solid var(--green); }
+        .status-err { background: rgba(239, 83, 80, 0.15); border: 2px solid #ef5350; }
+        .footer { text-align: center; font-size: 12px; color: #666; margin-top: 18px; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="header">
+        <div class="badge">📡 Ortskanal Gagen-TV</div>
+        <h1>Deine Meinung zählt!</h1>
+        <p class="sub">Hilf uns, das Programm noch besser zu machen – komplett anonym & ohne Anmeldung.</p>
+    </div>
+
+    <form id="fbForm">
+        <!-- 1. Sterne-Bewertung -->
+        <div class="card">
+            <label>⭐ Wie gefällt dir Gagen-TV insgesamt?</label>
+            <div class="stars" id="starContainer">
+                <button type="button" class="star-btn" data-val="1">⭐</button>
+                <button type="button" class="star-btn" data-val="2">⭐</button>
+                <button type="button" class="star-btn" data-val="3">⭐</button>
+                <button type="button" class="star-btn" data-val="4">⭐</button>
+                <button type="button" class="star-btn" data-val="5">⭐</button>
+            </div>
+            <div class="star-hint" id="starText">Tippe auf die Sterne (optional)</div>
+        </div>
+
+        <!-- 2. Was ist gut? -->
+        <div class="card">
+            <label for="fGood">👍 Was gefällt dir besonders gut?</label>
+            <textarea id="fGood" maxlength="500" placeholder="z.B. Webcams, Gottesdienste, Abfuhrtermine, Gestaltung..."></textarea>
+        </div>
+
+        <!-- 3. Was verbessern? -->
+        <div class="card">
+            <label for="fImprove">🔧 Was sollten wir verbessern?</label>
+            <textarea id="fImprove" maxlength="500" placeholder="z.B. Schriftgröße, Standzeit einer Seite, Farben..."></textarea>
+        </div>
+
+        <!-- 4. Neue Ideen -->
+        <div class="card">
+            <label for="fIdeas">💡 Hast du ganz neue Ideen oder Wünsche?</label>
+            <textarea id="fIdeas" maxlength="500" placeholder="Welche Infos aus dem Ort fehlen dir noch im Programm?"></textarea>
+        </div>
+
+        <!-- 5. Optionaler Name -->
+        <div class="card">
+            <label for="fName">👤 Dein Name oder Gruß (freiwillig)</label>
+            <input type="text" id="fName" maxlength="80" placeholder="Leer lassen für anonymes Feedback">
+            <!-- Unsichtbarer Spam-Schutz (Honeypot) -->
+            <input type="text" id="fWebsite" class="hp-field" tabindex="-1" autocomplete="off">
+        </div>
+
+        <button type="submit" class="submit-btn" id="sendBtn">📨 Feedback jetzt absenden</button>
+    </form>
+
+    <div id="msgBox" class="status-msg"></div>
+    <div class="footer">Danke fürs Zuschauen bei Gagen-TV!</div>
+</div>
+
+<script>
+(function() {
+    const NTFY_TOPIC = "Ortskanal_Gagen-TV_Feedback";
+    const starTexts = {
+        1: "1 von 5 Sternen – Ausbaufähig",
+        2: "2 von 5 Sternen – Geht so",
+        3: "3 von 5 Sternen – Ganz ordentlich",
+        4: "4 von 5 Sternen – Gefällt mir gut!",
+        5: "5 von 5 Sternen – Absolut spitze!"
+    };
+
+    let rating = 0;
+    const btns = document.querySelectorAll('.star-btn');
+    const starText = document.getElementById('starText');
+
+    btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            rating = parseInt(btn.getAttribute('data-val'), 10);
+            btns.forEach(b => {
+                b.classList.toggle('active', parseInt(b.getAttribute('data-val'), 10) <= rating);
+            });
+            starText.textContent = starTexts[rating] || "";
+        });
+    });
+
+    const form = document.getElementById('fbForm');
+    const sendBtn = document.getElementById('sendBtn');
+    const msgBox = document.getElementById('msgBox');
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Honeypot-Check gegen Bots
+        if (document.getElementById('fWebsite').value !== "") return;
+
+        // Einfache 60-Sekunden-Bremse gegen Mehrfachklicks
+        const lastSent = parseInt(localStorage.getItem('gtv_fb_ts') || "0", 10);
+        if (Date.now() - lastSent < 60000) {
+            alert("Du hast gerade erst ein Feedback gesendet. Vielen Dank!");
+            return;
+        }
+
+        const good = document.getElementById('fGood').value.trim();
+        const improve = document.getElementById('fImprove').value.trim();
+        const ideas = document.getElementById('fIdeas').value.trim();
+        const name = document.getElementById('fName').value.trim() || "Anonym";
+
+        if (rating === 0 && !good && !improve && !ideas) {
+            alert("Bitte vergib mindestens Sterne oder schreibe einen kurzen Hinweis.");
+            return;
+        }
+
+        sendBtn.disabled = true;
+        sendBtn.textContent = "Wird gesendet...";
+
+        const starsVisual = rating > 0 ? "⭐".repeat(rating) + ` (${rating}/5)` : "Keine Sterne gewählt";
+        const lines = [
+            `⭐ Bewertung: ${starsVisual}`,
+            good    ? `\n👍 Was ist gut:\n${good}` : "",
+            improve ? `\n🔧 Verbessern:\n${improve}` : "",
+            ideas   ? `\n💡 Neue Ideen:\n${ideas}` : "",
+            `\n👤 Absender: ${name}`
+        ].filter(Boolean).join("\n");
+
+        try {
+            const res = await fetch("https://ntfy.sh/" + NTFY_TOPIC, {
+                method: "POST",
+                headers: {
+                    "Title": "Gagen-TV Zuschauerpost",
+                    "Tags": "mailbox_with_mail,star",
+                    "Priority": "default"
+                },
+                body: lines
+            });
+
+            if (!res.ok) throw new Error("Server-Antwort " + res.status);
+
+            localStorage.setItem('gtv_fb_ts', String(Date.now()));
+            form.style.display = "none";
+            msgBox.className = "status-msg status-ok";
+            msgBox.style.display = "block";
+            msgBox.innerHTML = "<b>✅ Vielen Dank für dein Feedback!</b><br><br>Deine Nachricht ist direkt bei der Gagen-TV Redaktion angekommen.";
+        } catch (err) {
+            sendBtn.disabled = false;
+            sendBtn.textContent = "📨 Feedback jetzt absenden";
+            msgBox.className = "status-msg status-err";
+            msgBox.style.display = "block";
+            msgBox.innerHTML = "⚠️ Senden fehlgeschlagen. Bitte prüfe kurz deine Internetverbindung.";
+        }
+    });
+})();
+</script>
+</body>
+</html>
