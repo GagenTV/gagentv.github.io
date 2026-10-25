@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive">
     <title>Gagen-TV – Zuschauer-Feedback</title>
     <style>
@@ -41,7 +41,7 @@
             margin-bottom: 14px; border: 1px solid #2a2a3c;
             box-shadow: 0 4px 12px rgba(0,0,0,0.35);
         }
-        label {
+        label, .label {
             display: block; font-size: 15px; font-weight: bold;
             margin-bottom: 8px; color: #fff;
         }
@@ -71,8 +71,15 @@
         textarea:focus, input[type="text"]:focus {
             outline: none; border-color: var(--accent);
         }
+        button:focus-visible {
+            outline: 3px solid var(--accent); outline-offset: 2px;
+        }
         textarea { min-height: 76px; }
         .hp-field { display: none !important; }
+        .consent {
+            text-align: center; font-size: 12px; color: var(--muted);
+            margin: 0 4px 10px 4px; line-height: 1.4;
+        }
         .submit-btn {
             width: 100%; background: linear-gradient(180deg, #29b6f6, #0288d1);
             color: #fff; border: none; border-radius: 10px;
@@ -114,20 +121,20 @@
     <div class="header">
         <div class="badge">📡 Ortskanal Gagen-TV</div>
         <h1>Deine Meinung zählt!</h1>
-        <p class="sub">Hilf uns, das Programm noch besser zu machen – komplett anonym & ohne Anmeldung.</p>
+        <p class="sub">Hilf uns, das Programm noch besser zu machen – ohne Anmeldung und ohne Pflichtangaben.</p>
     </div>
 
     <form id="fbForm">
         <div class="card">
-            <label>⭐ Wie gefällt dir Gagen-TV insgesamt?</label>
-            <div class="stars" id="starContainer">
-                <button type="button" class="star-btn" data-val="1">⭐</button>
-                <button type="button" class="star-btn" data-val="2">⭐</button>
-                <button type="button" class="star-btn" data-val="3">⭐</button>
-                <button type="button" class="star-btn" data-val="4">⭐</button>
-                <button type="button" class="star-btn" data-val="5">⭐</button>
+            <div class="label" id="ratingLbl">⭐ Wie gefällt dir Gagen-TV insgesamt?</div>
+            <div class="stars" id="starContainer" role="group" aria-labelledby="ratingLbl">
+                <button type="button" class="star-btn" data-val="1" aria-label="1 Stern" aria-pressed="false">⭐</button>
+                <button type="button" class="star-btn" data-val="2" aria-label="2 Sterne" aria-pressed="false">⭐</button>
+                <button type="button" class="star-btn" data-val="3" aria-label="3 Sterne" aria-pressed="false">⭐</button>
+                <button type="button" class="star-btn" data-val="4" aria-label="4 Sterne" aria-pressed="false">⭐</button>
+                <button type="button" class="star-btn" data-val="5" aria-label="5 Sterne" aria-pressed="false">⭐</button>
             </div>
-            <div class="star-hint" id="starText">Tippe auf die Sterne (optional)</div>
+            <div class="star-hint" id="starText" aria-live="polite">Tippe auf die Sterne (optional)</div>
         </div>
 
         <div class="card">
@@ -147,20 +154,21 @@
 
         <div class="card">
             <label for="fName">👤 Dein Name oder Gruß (freiwillig)</label>
-            <input type="text" id="fName" maxlength="80" placeholder="Leer lassen für anonymes Feedback">
-            <input type="text" id="fWebsite" class="hp-field" tabindex="-1" autocomplete="off">
+            <input type="text" id="fName" maxlength="80" placeholder="Leer lassen, wenn du keinen Namen angeben möchtest">
+            <input type="text" id="fWebsite" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
         </div>
 
+        <p class="consent">Mit dem Absenden willigst du ein, dass dein Feedback über den Dienst ntfy.sh (USA) an die Redaktion übermittelt wird. Details findest du unten in den Datenschutzhinweisen.</p>
         <button type="submit" class="submit-btn" id="sendBtn">📨 Feedback jetzt absenden</button>
     </form>
 
-    <div id="msgBox" class="status-msg"></div>
+    <div id="msgBox" class="status-msg" role="status" aria-live="polite"></div>
 
     <div class="footer">
         <div>Danke fürs Zuschauen beim Gagen-TV!</div>
-        <button type="button" class="legal-btn" id="legalToggle">Impressum & Datenschutzhinweise</button>
+        <button type="button" class="legal-btn" id="legalToggle" aria-expanded="false" aria-controls="legalBox">Impressum &amp; Datenschutzhinweise</button>
         <div class="legal-box" id="legalBox">
-            <canvas id="legalCanvas"></canvas>
+            <canvas id="legalCanvas" role="img" aria-label="Impressum und Datenschutzhinweise (als Textgrafik dargestellt)"></canvas>
         </div>
     </div>
 </div>
@@ -172,7 +180,11 @@
     // =========================================================================
     // 1. FEEDBACK-FORMULAR & NTFY-VERSAND
     // =========================================================================
-    const NTFY_TOPIC = "Ortskanal_Gagen-TV_Feedback";
+    // Der Kanalname steht nicht im Klartext im Code, sondern wird erst beim
+    // Senden aus drei Teilen zusammengesetzt (Schutz vor Quelltext-Scannern;
+    // im Netzwerk-Tab des Browsers bleibt die Adresse sichtbar).
+    const _tA = "Z3R2ZmJ6b1Nr";
+
     const starTexts = {
         1: "1 von 5 Sternen – Ausbaufähig",
         2: "2 von 5 Sternen – Geht so",
@@ -180,6 +192,15 @@
         4: "4 von 5 Sternen – Gefällt mir gut!",
         5: "5 von 5 Sternen – Absolut spitze!"
     };
+
+    // Lokale Speicherung defensiv (Privatmodus/gesperrter Speicher darf nichts kaputt machen)
+    function lsGet(key) {
+        try { return localStorage.getItem(key); } catch (e) { return null; }
+    }
+    function lsSet(key, val) {
+        try { localStorage.setItem(key, val); } catch (e) { /* ignorieren */ }
+    }
+    let lastSentMem = 0;
 
     let rating = 0;
     const btns = document.querySelectorAll('.star-btn');
@@ -189,21 +210,32 @@
         btn.addEventListener('click', () => {
             rating = parseInt(btn.getAttribute('data-val'), 10);
             btns.forEach(b => {
-                b.classList.toggle('active', parseInt(b.getAttribute('data-val'), 10) <= rating);
+                const on = parseInt(b.getAttribute('data-val'), 10) <= rating;
+                b.classList.toggle('active', on);
+                b.setAttribute('aria-pressed', on ? 'true' : 'false');
             });
             starText.textContent = starTexts[rating] || "";
         });
     });
 
+    const _tB = "R0dXTmpTS2s0";
+
     const form = document.getElementById('fbForm');
     const sendBtn = document.getElementById('sendBtn');
     const msgBox = document.getElementById('msgBox');
+
+    function ntfyEndpoint() {
+        const topic = [_tA, _tB, _tC].map(function(x) { return atob(x); }).join('');
+        return "https://ntfy.sh/" + encodeURIComponent(topic) +
+            "?title=" + encodeURIComponent("Gagen-TV Zuschauerpost") +
+            "&tags=mailbox_with_mail,star&priority=default";
+    }
 
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         if (document.getElementById('fWebsite').value !== "") return;
 
-        const lastSent = parseInt(localStorage.getItem('gtv_fb_ts') || "0", 10);
+        const lastSent = Math.max(parseInt(lsGet('gtv_fb_ts') || "0", 10) || 0, lastSentMem);
         if (Date.now() - lastSent < 60000) {
             alert("Du hast gerade erst ein Feedback gesendet. Vielen Dank!");
             return;
@@ -232,22 +264,23 @@
             `\n👤 Absender: ${name}`
         ].filter(Boolean).join("\n");
 
-        const endpoint = `https://ntfy.sh/${encodeURIComponent(NTFY_TOPIC)}?title=${encodeURIComponent("Gagen-TV Zuschauerpost")}&tags=mailbox_with_mail,star&priority=default`;
-
+        // Nur das Netzwerk entscheidet über Erfolg oder Fehler
+        let ok = false;
         try {
-            const res = await fetch(endpoint, {
-                method: "POST",
-                body: lines
-            });
+            const res = await fetch(ntfyEndpoint(), { method: "POST", body: lines });
+            ok = res.ok;
+        } catch (err) {
+            ok = false;
+        }
 
-            if (!res.ok) throw new Error("HTTP " + res.status);
-
-            localStorage.setItem('gtv_fb_ts', String(Date.now()));
+        if (ok) {
+            lastSentMem = Date.now();
+            lsSet('gtv_fb_ts', String(lastSentMem));
             form.style.display = "none";
             msgBox.className = "status-msg status-ok";
             msgBox.style.display = "block";
             msgBox.innerHTML = "<b>✅ Vielen Dank für dein Feedback!</b><br><br>Deine Nachricht ist direkt bei der Gagen-TV Redaktion angekommen.";
-        } catch (err) {
+        } else {
             sendBtn.disabled = false;
             sendBtn.textContent = "📨 Feedback jetzt absenden";
             msgBox.className = "status-msg status-err";
@@ -257,39 +290,43 @@
     });
 
     // =========================================================================
-    // 2. KRYPTOGRAFISCHE ENTSCHLÜSSELUNG + CANVAS-GRAFIK-RENDERER (KEIN DOM-TEXT)
+    // 2. IMPRESSUM + DATENSCHUTZ ALS CANVAS-GRAFIK (KEIN DOM-TEXT)
     // =========================================================================
-    const _K = [163,47,219,88,14,192,75,231,109,52,180,31,246,93,128,67,204,19,155,82,240,101,38,171,222,60,137,9,198,116,43,251];
-    const _D = "2B26438554954791053839B1D540B96F0A5F93474CD45A264303EA7B816DC0B9B0A4C7263FD84C35C35701F8710CF16BD2BA588E0B1D49927BB93F87DC25E7484C1162AD308C4CE56372C8D064415A6CEBCBD685AE1153B6263EA01A2FD3D721B3A4D01726D473D66BC8829F069802AD7B6E822EDDD0BB76747D8564143263906A1CA4AD4603C8DB25D95965C569D948AF6352A54FA3C418A6BB21ADFC25E847E031214F936FD35C11AC259150A62BD4CD40B96D4B8DFC6324DC5B7F460A3CF58A6FD7DB33ECAA9D5E6EC50B9A842CF4763ADCA5DE28D264354F52C8598C041A3CEB5B060D24D27C95C96548A49B2632CA8DA2F84DA0FC257920C1F42B9263FA6851CD45811AC39914EA5CD0CD3589F522B26438254954798143F229ED442A51F3065D41509FD48354C9D46CF059B02E4C8583FC84323D34A11FD751AC873DCA01EBF170745A629F97FD3DD2EFB604C007BB33AC8AE20382FC100422FACCFAFF34696C35648B63137B542B7C60CC01AD1A2D60E329F639923EA3BC10128B6AE6B9A6F50AC212E1547B174BB0EA0BD35C07F53F921A86CBD4CD40B96F0A5F93474CD45A264303EA7D9668CEAAE7B5EC2136DF022CD54C0FE67402EC75CFA256CE0E0758CD21F9279C33F94BC51B3ED34C01EA75890A4AC843AE3F3AA40548A621E69C25F11AC259148A51D3D70B8AA42CA9DB3ADCA59277920415C85FB5132ADBA6CF1BC35D1BB34C01FA6D8D0052DC4CA82F7DA24D5BA63CE4963AC4F53A8645AC621DD4E139D952C15B34CA02B6CD868B66BC21A8EA054900BA24E87FD868B2296D8ACDF676F9F584152263806B6CA5BD558259DB64B98DE1DB367DC5EB6767AE801F7D55CB57E8DC2501A438A352A058A029DD4C263FA3D93494DA53264D0FF22B845FA9ADEBA9D8223AA4906F83DA31EC28A54EA7DA0EA501C45AB0B63CE4963ADDF00EA63EB5DE63CE4914AD981FF8388F1BAEB5EE5AA48B5FD71C632BA49B5FF31C30EE61B7E02ECDA74D57AC32E45F2B834D8623BF36FC1AA9748D522BA1BB5EE5DF08C67F1F8672A8C9219A530B8675BB0326451AF766CE1FAF1163A53B3FAD4F9DFD2CC34AA6362FB50B9A9DECA4BF08816C079A75F50FA45C3DF62B9A53A8767AF94FB2DC1EB7262FA15089CD20B9259F62BD4CC81A8FD32B26438554954791053839B1D540B96F0A5F93474CD45A264303EA7B816DC0B9B0B4C72638DF0324D25845BA704CF172D4B01DA8420C0C936AB06D95CF38E7250D126AA27D9A8E2B2A63C904410CA98ABBD0D7AD0F0F73BF622FBD4DBECE479248CF6DC04921A4DE0D61C63DB4EA74B00B981A3DF1233FBD4DB7059B02FDDF5D2BDF0222CE5FC2F0654CF03DC2AA3DC25A1EB7767DA24E32D61DB7263DA1159A8E2E2B2863C6191D48A8DAEEAA1D93545E4C9258821EC85B946FC1AA8B43C7762FA9AE15F8CE3BF2259D03ADCE4CA47E73D0475BF37EE355DF0DFB605AC067AD2DD6EE753F258D071D46AEC4AFAD42CA5045E8DC69D952C95A38C456F5DF1BF963901A438A352A058A029DD4C263FA3D93494DA53264D0FF22B845FA9ADEBA9D8223AA4906F83DA31EC28A54EA7DA0EA501C45AB0B63CE4963ADDF00EA63EB5DE63CE4914AD981FF8388F1BAEB5EE5AA48B5FD71C632BA49B5FF31C30EE61B7E02ECDA74D57AC32E45F2B834D8623BF36FC1AA9748D522BA1BB5EE5DF08C67F1F8672A8C9219A530B8675BB0326451AF766CE1FAF1163A53B3FAD4F9DFD2CC34AA6362FB50B9A9DECA4BF08816C079A75F50FA45C3DF62B9A53A8767AF94FB2DC1EB7262FA15089CD20B9259F62BD4CC81A8FD3";
+    const _tC = "eUNodFU2YVd1";
 
-    let decryptedItems = null;
+    let legalItems = null;
 
     function unlockLegalData() {
-        if (decryptedItems) return decryptedItems;
-        try {
-            // Entschlüsselt den geschützten Datenstrom im RAM
-            const items = [
-                { s: "h", t: "Impressum (Angaben gemäß \u00a7 5 DDG & \u00a7 18 MStV)" },
-                { s: "b", t: [65,108,101,120,97,110,100,101,114,32,77,97,114,114].map(c => String.fromCharCode(c)).join("") },
-                { s: "n", t: [75,105,114,99,104,115,116,114,97,223,101,32,51].map(c => String.fromCharCode(c)).join("") },
-                { s: "n", t: [57,56,53,56,55,32,83,116,101,105,110,98,97,99,104,45,72,97,108,108,101,110,98,101,114,103,44,32,79,84,32,86,105,101,114,110,97,117].map(c => String.fromCharCode(c)).join("") },
-                { s: "n", t: [69,45,77,97,105,108,58,32,97,120,46,109,97,114,114,64,119,101,98,46,100,101].map(c => String.fromCharCode(c)).join("") },
-                { s: "",  t: "" },
-                { s: "h", t: "Datenschutzhinweise (DSGVO)" },
-                { s: "b", t: "1. Grundsatz & Hosting" },
-                { s: "n", t: "Diese Seite verwendet keine Cookies, kein Tracking und keine Analyse-Tools. Die statische Auslieferung erfolgt über GitHub Pages (GitHub Inc., USA), wobei technisch bedingt Ihre IP-Adresse im Server-Log verarbeitet wird (Art. 6 Abs. 1 lit. f DSGVO)." },
-                { s: "",  t: "" },
-                { s: "b", t: "2. Feedback-Übermittlung via ntfy.sh" },
-                { s: "n", t: "Alle Angaben im Formular sind freiwillig und anonym möglich. Beim Absenden wird Ihre Nachricht direkt und verschlüsselt über den Dienst ntfy.sh an die Redaktion übertragen (Art. 6 Abs. 1 lit. a DSGVO)." },
-                { s: "",  t: "" },
-                { s: "b", t: "3. Ihre Rechte" },
-                { s: "n", t: "Sie haben jederzeit das Recht auf Auskunft, Berichtigung oder Löschung Ihrer freiwillig übermittelten Angaben per E-Mail an die oben genannte Adresse." }
-            ];
-            decryptedItems = items;
-            return decryptedItems;
-        } catch (e) {
-            return [];
-        }
+        if (legalItems) return legalItems;
+        // Impressum-Angaben als Zeichencodes (Schutz vor einfachen Scrapern)
+        legalItems = [
+            { s: "h", t: "Impressum (Angaben gemäß \u00a7 5 DDG & \u00a7 18 MStV)" },
+            { s: "b", t: [65,108,101,120,97,110,100,101,114,32,77,97,114,114].map(c => String.fromCharCode(c)).join("") },
+            { s: "n", t: [75,105,114,99,104,115,116,114,97,223,101,32,51].map(c => String.fromCharCode(c)).join("") },
+            { s: "n", t: [57,56,53,56,55,32,83,116,101,105,110,98,97,99,104,45,72,97,108,108,101,110,98,101,114,103,44,32,79,84,32,86,105,101,114,110,97,117].map(c => String.fromCharCode(c)).join("") },
+            { s: "n", t: [69,45,77,97,105,108,58,32,97,120,46,109,97,114,114,64,119,101,98,46,100,101].map(c => String.fromCharCode(c)).join("") },
+            { s: "",  t: "" },
+            { s: "h", t: "Datenschutzhinweise (DSGVO)" },
+            { s: "b", t: "1. Verantwortlicher" },
+            { s: "n", t: "Verantwortlich für die Datenverarbeitung ist die im Impressum genannte Person." },
+            { s: "",  t: "" },
+            { s: "b", t: "2. Grundsatz & Hosting" },
+            { s: "n", t: "Diese Seite verwendet keine Cookies, kein Tracking und keine Analyse-Tools. Die statische Auslieferung erfolgt über GitHub Pages (GitHub Inc., USA), wobei technisch bedingt Ihre IP-Adresse im Server-Log verarbeitet wird (Art. 6 Abs. 1 lit. f DSGVO)." },
+            { s: "",  t: "" },
+            { s: "b", t: "3. Feedback-Übermittlung via ntfy.sh" },
+            { s: "n", t: "Alle Angaben im Formular sind freiwillig. Beim Absenden wird Ihre Nachricht (Bewertung, Freitexte und, falls angegeben, Ihr Name) per HTTPS an den Dienst ntfy.sh (USA) übertragen und von dort an die Redaktion zugestellt. Dabei verarbeitet ntfy.sh technisch bedingt Ihre IP-Adresse und speichert die Nachricht vorübergehend zwischen." },
+            { s: "n", t: "Rechtsgrundlage ist Ihre Einwilligung durch das Absenden (Art. 6 Abs. 1 lit. a DSGVO); damit willigen Sie auch in die Übermittlung in die USA ein (Art. 49 Abs. 1 lit. a DSGVO). Sie können die Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen, indem Sie nichts absenden bzw. uns per E-Mail kontaktieren." },
+            { s: "",  t: "" },
+            { s: "b", t: "4. Speicherdauer" },
+            { s: "n", t: "Eingegangenes Feedback wird nur so lange gespeichert, wie es für die Auswertung erforderlich ist, und danach gelöscht." },
+            { s: "",  t: "" },
+            { s: "b", t: "5. Lokale Speicherung im Browser" },
+            { s: "n", t: "Zum Schutz vor Mehrfach-Absendungen speichert Ihr Browser lokal einen Zeitstempel des letzten Absendens. Dieser Wert verlässt Ihr Gerät nicht und ist kein Cookie." },
+            { s: "",  t: "" },
+            { s: "b", t: "6. Ihre Rechte" },
+            { s: "n", t: "Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer freiwillig übermittelten Angaben per E-Mail an die oben genannte Adresse. Zudem können Sie sich bei einer Datenschutz-Aufsichtsbehörde beschweren, z. B. beim Thüringer Landesbeauftragten für den Datenschutz und die Informationsfreiheit (TLfDI)." }
+        ];
+        return legalItems;
     }
 
     function renderLegalCanvas() {
@@ -367,8 +404,10 @@
         const isOpen = (legalBox.style.display === 'block');
         if (isOpen) {
             legalBox.style.display = 'none';
+            legalToggle.setAttribute('aria-expanded', 'false');
         } else {
             legalBox.style.display = 'block';
+            legalToggle.setAttribute('aria-expanded', 'true');
             renderLegalCanvas();
             legalBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
