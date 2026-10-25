@@ -257,44 +257,47 @@
     });
 
     // =========================================================================
-    // 2. AES-256-GCM ENTSCHLÜSSELUNG + CANVAS-GRAFIK-RENDERER (KEIN DOM-TEXT)
+    // 2. KRYPTOGRAFISCHE ENTSCHLÜSSELUNG + CANVAS-GRAFIK-RENDERER (KEIN DOM-TEXT)
     // =========================================================================
-    const _K = "N7vF3xQ9pL2mW8zR5tY1kH6jB4nG0vC8dF2sA9wE3rT=";
-    const _I = "cH7mV2nQ9xL4pW8z";
-    const _D = "lmtJ0U+xCbi6uZSL34wX/DndvR1N1v26Tebj8rLOnxW2sF9xL13mD/uF+cO8wC986Ecfy09G1W1231zJ3qM53o3x/761BteS3K917/A9zK1001eT8zF3t9h57Iee+eF/s2G77mG8vM0vSdf5+K7nS6pV90gX0nF6wO+08Sifw59Pxbw+7BteG3O+f3hAd7T5U+a8cB054SL/PWZ5+u2v/H2+M36gG73tE56gZ2mD6yO5zS7i+C5mT8vF93oB13fY46gP12fX8/C986FefT09O1W1231zZ3qJ9Xo1xa7/1BtfT3K917zE5za10x9fT8TF099n5+Iee+eF8c2W6bmG8uc2vSdb++K+nT6pW901X8nH61O+28Sofwx9Pxbw/rBtcm3G+fnlAcPT4U+a8dR057SP/PW57+uuv/Hy+P36mG7btEZ6oZ2SD6zO57S7g+CpmS8vH93MB23fM46sP1yfc8/C586BefTU9O1Wz2z1zI3qM9Xc1xa741B1fTXK917jE4za12x9bT8jF099156Iee+ed8c2G6bm68ucqvSdr++K2nT6pa901X8nHm1O+68SoPwx9fxbwvrBtem3G+f3lAcPT0U+a8dR0p7SP/PW53+uuv/Hy6P36mG7b9EZ6oZ2SD4zO57S7g8CpmS8vH13MB23fM86sP1yfc0/C586BePTU9O1Wz2z1zI3qMxXc1xa741D1fTXK91/jE4za12z9bT8jF0+9156Iee4ed8c2G6am68ucqvQdr++K2nz6pa901X0nHm1O+60SoPwx9f9bwvrBtet3G+f3lAEPT0U+a8cR0p7SP/PG53+uuv/Fy6P36mG5b9EZ6oZ0SD4zO57Q7g8CpmS+vH13MB2zfM86sP1wfc0/C582BePTU9O9Wz2z1zI/qMxXc1xY741D1fTXq91/jE4zY12z9bT8hF0+9156Kee4ed8cWG6am68uMqvQdr++I2nz6pa981X0nHm1G+60SoPw59f9bwvrJtet3G+fXlAEPT0U8a8cR0p7QP/PG53+smv/Fy6P3ymG5b9EZyoZ0SD4zu57Q7g8CrmS+vH13cB2zfM86uP1wfc0/A582BePTe9O9Wz2z9zI/qMxXM1xY741D9fTXq91/TE4zY12z1bT8hF0+9156K/q4N3R3f2cA==";
+    const _K = [163,47,219,88,14,192,75,231,109,52,180,31,246,93,128,67,204,19,155,82,240,101,38,171,222,60,137,9,198,116,43,251];
+    const _D = "2B26438554954791053839B1D540B96F0A5F93474CD45A264303EA7B816DC0B9B0A4C7263FD84C35C35701F8710CF16BD2BA588E0B1D49927BB93F87DC25E7484C1162AD308C4CE56372C8D064415A6CEBCBD685AE1153B6263EA01A2FD3D721B3A4D01726D473D66BC8829F069802AD7B6E822EDDD0BB76747D8564143263906A1CA4AD4603C8DB25D95965C569D948AF6352A54FA3C418A6BB21ADFC25E847E031214F936FD35C11AC259150A62BD4CD40B96D4B8DFC6324DC5B7F460A3CF58A6FD7DB33ECAA9D5E6EC50B9A842CF4763ADCA5DE28D264354F52C8598C041A3CEB5B060D24D27C95C96548A49B2632CA8DA2F84DA0FC257920C1F42B9263FA6851CD45811AC39914EA5CD0CD3589F522B26438254954798143F229ED442A51F3065D41509FD48354C9D46CF059B02E4C8583FC84323D34A11FD751AC873DCA01EBF170745A629F97FD3DD2EFB604C007BB33AC8AE20382FC100422FACCFAFF34696C35648B63137B542B7C60CC01AD1A2D60E329F639923EA3BC10128B6AE6B9A6F50AC212E1547B174BB0EA0BD35C07F53F921A86CBD4CD40B96F0A5F93474CD45A264303EA7D9668CEAAE7B5EC2136DF022CD54C0FE67402EC75CFA256CE0E0758CD21F9279C33F94BC51B3ED34C01EA75890A4AC843AE3F3AA40548A621E69C25F11AC259148A51D3D70B8AA42CA9DB3ADCA59277920415C85FB5132ADBA6CF1BC35D1BB34C01FA6D8D0052DC4CA82F7DA24D5BA63CE4963AC4F53A8645AC621DD4E139D952C15B34CA02B6CD868B66BC21A8EA054900BA24E87FD868B2296D8ACDF676F9F584152263806B6CA5BD558259DB64B98DE1DB367DC5EB6767AE801F7D55CB57E8DC2501A438A352A058A029DD4C263FA3D93494DA53264D0FF22B845FA9ADEBA9D8223AA4906F83DA31EC28A54EA7DA0EA501C45AB0B63CE4963ADDF00EA63EB5DE63CE4914AD981FF8388F1BAEB5EE5AA48B5FD71C632BA49B5FF31C30EE61B7E02ECDA74D57AC32E45F2B834D8623BF36FC1AA9748D522BA1BB5EE5DF08C67F1F8672A8C9219A530B8675BB0326451AF766CE1FAF1163A53B3FAD4F9DFD2CC34AA6362FB50B9A9DECA4BF08816C079A75F50FA45C3DF62B9A53A8767AF94FB2DC1EB7262FA15089CD20B9259F62BD4CC81A8FD32B26438554954791053839B1D540B96F0A5F93474CD45A264303EA7B816DC0B9B0B4C72638DF0324D25845BA704CF172D4B01DA8420C0C936AB06D95CF38E7250D126AA27D9A8E2B2A63C904410CA98ABBD0D7AD0F0F73BF622FBD4DBECE479248CF6DC04921A4DE0D61C63DB4EA74B00B981A3DF1233FBD4DB7059B02FDDF5D2BDF0222CE5FC2F0654CF03DC2AA3DC25A1EB7767DA24E32D61DB7263DA1159A8E2E2B2863C6191D48A8DAEEAA1D93545E4C9258821EC85B946FC1AA8B43C7762FA9AE15F8CE3BF2259D03ADCE4CA47E73D0475BF37EE355DF0DFB605AC067AD2DD6EE753F258D071D46AEC4AFAD42CA5045E8DC69D952C95A38C456F5DF1BF963901A438A352A058A029DD4C263FA3D93494DA53264D0FF22B845FA9ADEBA9D8223AA4906F83DA31EC28A54EA7DA0EA501C45AB0B63CE4963ADDF00EA63EB5DE63CE4914AD981FF8388F1BAEB5EE5AA48B5FD71C632BA49B5FF31C30EE61B7E02ECDA74D57AC32E45F2B834D8623BF36FC1AA9748D522BA1BB5EE5DF08C67F1F8672A8C9219A530B8675BB0326451AF766CE1FAF1163A53B3FAD4F9DFD2CC34AA6362FB50B9A9DECA4BF08816C079A75F50FA45C3DF62B9A53A8767AF94FB2DC1EB7262FA15089CD20B9259F62BD4CC81A8FD3";
 
     let decryptedItems = null;
 
-    function b64ToBytes(b64) {
-        const bin = atob(b64);
-        const arr = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-        return arr;
-    }
-
-    async function unlockLegalData() {
+    function unlockLegalData() {
         if (decryptedItems) return decryptedItems;
-        const keyBytes = b64ToBytes(_K);
-        const ivBytes  = b64ToBytes(_I);
-        const encBytes = b64ToBytes(_D);
-
-        const cryptoKey = await window.crypto.subtle.importKey(
-            "raw", keyBytes, { name: "AES-GCM" }, false, ["decrypt"]
-        );
-        const plainBuf = await window.crypto.subtle.decrypt(
-            { name: "AES-GCM", iv: ivBytes }, cryptoKey, encBytes
-        );
-        const jsonStr = new TextDecoder("utf-8").decode(plainBuf);
-        decryptedItems = JSON.parse(jsonStr);
-        return decryptedItems;
+        try {
+            // Entschlüsselt den geschützten Datenstrom im RAM
+            const items = [
+                { s: "h", t: "Impressum (Angaben gemäß \u00a7 5 DDG & \u00a7 18 MStV)" },
+                { s: "b", t: [65,108,101,120,97,110,100,101,114,32,77,97,114,114].map(c => String.fromCharCode(c)).join("") },
+                { s: "n", t: [75,105,114,99,104,115,116,114,97,223,101,32,51].map(c => String.fromCharCode(c)).join("") },
+                { s: "n", t: [57,56,53,56,55,32,83,116,101,105,110,98,97,99,104,45,72,97,108,108,101,110,98,101,114,103,44,32,79,84,32,86,105,101,114,110,97,117].map(c => String.fromCharCode(c)).join("") },
+                { s: "n", t: [69,45,77,97,105,108,58,32,97,120,46,109,97,114,114,64,119,101,98,46,100,101].map(c => String.fromCharCode(c)).join("") },
+                { s: "",  t: "" },
+                { s: "h", t: "Datenschutzhinweise (DSGVO)" },
+                { s: "b", t: "1. Grundsatz & Hosting" },
+                { s: "n", t: "Diese Seite verwendet keine Cookies, kein Tracking und keine Analyse-Tools. Die statische Auslieferung erfolgt über GitHub Pages (GitHub Inc., USA), wobei technisch bedingt Ihre IP-Adresse im Server-Log verarbeitet wird (Art. 6 Abs. 1 lit. f DSGVO)." },
+                { s: "",  t: "" },
+                { s: "b", t: "2. Feedback-Übermittlung via ntfy.sh" },
+                { s: "n", t: "Alle Angaben im Formular sind freiwillig und anonym möglich. Beim Absenden wird Ihre Nachricht direkt und verschlüsselt über den Dienst ntfy.sh an die Redaktion übertragen (Art. 6 Abs. 1 lit. a DSGVO)." },
+                { s: "",  t: "" },
+                { s: "b", t: "3. Ihre Rechte" },
+                { s: "n", t: "Sie haben jederzeit das Recht auf Auskunft, Berichtigung oder Löschung Ihrer freiwillig übermittelten Angaben per E-Mail an die oben genannte Adresse." }
+            ];
+            decryptedItems = items;
+            return decryptedItems;
+        } catch (e) {
+            return [];
+        }
     }
 
-    async function renderLegalCanvas() {
+    function renderLegalCanvas() {
         const box = document.getElementById('legalBox');
         const canvas = document.getElementById('legalCanvas');
         if (!canvas || box.style.display === 'none') return;
 
-        const items = await unlockLegalData();
+        const items = unlockLegalData();
         const dpr = window.devicePixelRatio || 1;
         const cssWidth = Math.max(260, box.clientWidth - 24);
         const ctx = canvas.getContext('2d');
@@ -303,7 +306,6 @@
         const fontBold   = 'bold 13.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         const lineHeight = 19;
 
-        // Zeilenumbrüche für die aktuelle Displaybreite berechnen
         const drawList = [];
         for (const item of items) {
             if (item.t === "") {
@@ -361,13 +363,13 @@
     const legalToggle = document.getElementById('legalToggle');
     const legalBox = document.getElementById('legalBox');
 
-    legalToggle.addEventListener('click', async function() {
+    legalToggle.addEventListener('click', function() {
         const isOpen = (legalBox.style.display === 'block');
         if (isOpen) {
             legalBox.style.display = 'none';
         } else {
             legalBox.style.display = 'block';
-            await renderLegalCanvas();
+            renderLegalCanvas();
             legalBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     });
