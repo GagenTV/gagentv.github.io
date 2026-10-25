@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="robots" content="noindex, nofollow, noarchive">
     <title>Gagen-TV – Zuschauer-Feedback</title>
     <style>
         :root {
@@ -85,7 +86,27 @@
         }
         .status-ok { background: rgba(102, 187, 106, 0.15); border: 2px solid var(--green); }
         .status-err { background: rgba(239, 83, 80, 0.15); border: 2px solid #ef5350; }
-        .footer { text-align: center; font-size: 12px; color: #666; margin-top: 18px; }
+        .footer {
+            text-align: center; font-size: 12px; color: #777;
+            margin-top: 22px; padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .legal-btn {
+            background: none; border: none; color: #888;
+            font-size: 12px; text-decoration: underline;
+            cursor: pointer; margin-top: 8px; padding: 6px 10px;
+        }
+        .legal-btn:hover { color: var(--accent); }
+        .legal-box {
+            display: none; margin-top: 12px;
+            background: #14141f; border: 1px solid #2a2a3c;
+            border-radius: 10px; padding: 12px;
+            text-align: left;
+        }
+        #legalCanvas {
+            width: 100%; height: auto; display: block;
+            user-select: none; -webkit-user-select: none;
+        }
     </style>
 </head>
 <body>
@@ -134,11 +155,23 @@
     </form>
 
     <div id="msgBox" class="status-msg"></div>
-    <div class="footer">Danke fürs Zuschauen bei Gagen-TV!</div>
+
+    <div class="footer">
+        <div>Danke fürs Zuschauen beim Gagen-TV!</div>
+        <button type="button" class="legal-btn" id="legalToggle">Impressum & Datenschutzhinweise</button>
+        <div class="legal-box" id="legalBox">
+            <canvas id="legalCanvas"></canvas>
+        </div>
+    </div>
 </div>
 
 <script>
 (function() {
+    'use strict';
+
+    // =========================================================================
+    // 1. FEEDBACK-FORMULAR & NTFY-VERSAND
+    // =========================================================================
     const NTFY_TOPIC = "Ortskanal_Gagen-TV_Feedback";
     const starTexts = {
         1: "1 von 5 Sternen – Ausbaufähig",
@@ -199,7 +232,6 @@
             `\n👤 Absender: ${name}`
         ].filter(Boolean).join("\n");
 
-        // CORS-Simple-Request über URL-Parameter (funktioniert auch mit strengem Brave-Shield/Safari)
         const endpoint = `https://ntfy.sh/${encodeURIComponent(NTFY_TOPIC)}?title=${encodeURIComponent("Gagen-TV Zuschauerpost")}&tags=mailbox_with_mail,star&priority=default`;
 
         try {
@@ -221,6 +253,128 @@
             msgBox.className = "status-msg status-err";
             msgBox.style.display = "block";
             msgBox.innerHTML = "⚠️ Senden fehlgeschlagen. Bitte prüfe kurz deine Internetverbindung.";
+        }
+    });
+
+    // =========================================================================
+    // 2. AES-256-GCM ENTSCHLÜSSELUNG + CANVAS-GRAFIK-RENDERER (KEIN DOM-TEXT)
+    // =========================================================================
+    const _K = "N7vF3xQ9pL2mW8zR5tY1kH6jB4nG0vC8dF2sA9wE3rT=";
+    const _I = "cH7mV2nQ9xL4pW8z";
+    const _D = "lmtJ0U+xCbi6uZSL34wX/DndvR1N1v26Tebj8rLOnxW2sF9xL13mD/uF+cO8wC986Ecfy09G1W1231zJ3qM53o3x/761BteS3K917/A9zK1001eT8zF3t9h57Iee+eF/s2G77mG8vM0vSdf5+K7nS6pV90gX0nF6wO+08Sifw59Pxbw+7BteG3O+f3hAd7T5U+a8cB054SL/PWZ5+u2v/H2+M36gG73tE56gZ2mD6yO5zS7i+C5mT8vF93oB13fY46gP12fX8/C986FefT09O1W1231zZ3qJ9Xo1xa7/1BtfT3K917zE5za10x9fT8TF099n5+Iee+eF8c2W6bmG8uc2vSdb++K+nT6pW901X8nH61O+28Sofwx9Pxbw/rBtcm3G+fnlAcPT4U+a8dR057SP/PW57+uuv/Hy+P36mG7btEZ6oZ2SD6zO57S7g+CpmS8vH93MB23fM46sP1yfc8/C586BefTU9O1Wz2z1zI3qM9Xc1xa741B1fTXK917jE4za12x9bT8jF099156Iee+ed8c2G6bm68ucqvSdr++K2nT6pa901X8nHm1O+68SoPwx9fxbwvrBtem3G+f3lAcPT0U+a8dR0p7SP/PW53+uuv/Hy6P36mG7b9EZ6oZ2SD4zO57S7g8CpmS8vH13MB23fM86sP1yfc0/C586BePTU9O1Wz2z1zI3qMxXc1xa741D1fTXK91/jE4za12z9bT8jF0+9156Iee4ed8c2G6am68ucqvQdr++K2nz6pa901X0nHm1O+60SoPwx9f9bwvrBtet3G+f3lAEPT0U+a8cR0p7SP/PG53+uuv/Fy6P36mG5b9EZ6oZ0SD4zO57Q7g8CpmS+vH13MB2zfM86sP1wfc0/C582BePTU9O9Wz2z1zI/qMxXc1xY741D1fTXq91/jE4zY12z9bT8hF0+9156Kee4ed8cWG6am68uMqvQdr++I2nz6pa981X0nHm1G+60SoPw59f9bwvrJtet3G+fXlAEPT0U8a8cR0p7QP/PG53+smv/Fy6P3ymG5b9EZyoZ0SD4zu57Q7g8CrmS+vH13cB2zfM86uP1wfc0/A582BePTe9O9Wz2z9zI/qMxXM1xY741D9fTXq91/TE4zY12z1bT8hF0+9156K/q4N3R3f2cA==";
+
+    let decryptedItems = null;
+
+    function b64ToBytes(b64) {
+        const bin = atob(b64);
+        const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        return arr;
+    }
+
+    async function unlockLegalData() {
+        if (decryptedItems) return decryptedItems;
+        const keyBytes = b64ToBytes(_K);
+        const ivBytes  = b64ToBytes(_I);
+        const encBytes = b64ToBytes(_D);
+
+        const cryptoKey = await window.crypto.subtle.importKey(
+            "raw", keyBytes, { name: "AES-GCM" }, false, ["decrypt"]
+        );
+        const plainBuf = await window.crypto.subtle.decrypt(
+            { name: "AES-GCM", iv: ivBytes }, cryptoKey, encBytes
+        );
+        const jsonStr = new TextDecoder("utf-8").decode(plainBuf);
+        decryptedItems = JSON.parse(jsonStr);
+        return decryptedItems;
+    }
+
+    async function renderLegalCanvas() {
+        const box = document.getElementById('legalBox');
+        const canvas = document.getElementById('legalCanvas');
+        if (!canvas || box.style.display === 'none') return;
+
+        const items = await unlockLegalData();
+        const dpr = window.devicePixelRatio || 1;
+        const cssWidth = Math.max(260, box.clientWidth - 24);
+        const ctx = canvas.getContext('2d');
+
+        const fontNormal = '13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        const fontBold   = 'bold 13.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        const lineHeight = 19;
+
+        // Zeilenumbrüche für die aktuelle Displaybreite berechnen
+        const drawList = [];
+        for (const item of items) {
+            if (item.t === "") {
+                drawList.push({ text: "", style: "space", h: 10 });
+                continue;
+            }
+            ctx.font = (item.s === "h" || item.s === "b") ? fontBold : fontNormal;
+            const words = item.t.split(' ');
+            let currentLine = "";
+
+            for (let i = 0; i < words.length; i++) {
+                const testLine = currentLine ? (currentLine + " " + words[i]) : words[i];
+                if (ctx.measureText(testLine).width > cssWidth - 8 && currentLine !== "") {
+                    drawList.push({ text: currentLine, style: item.s, h: lineHeight });
+                    currentLine = words[i];
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            if (currentLine) {
+                drawList.push({ text: currentLine, style: item.s, h: lineHeight });
+            }
+        }
+
+        const totalHeight = drawList.reduce((acc, row) => acc + row.h, 12);
+        canvas.width = Math.floor(cssWidth * dpr);
+        canvas.height = Math.floor(totalHeight * dpr);
+        canvas.style.height = totalHeight + "px";
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, cssWidth, totalHeight);
+        ctx.textBaseline = "top";
+
+        let y = 4;
+        for (const row of drawList) {
+            if (row.style === "space") {
+                y += row.h;
+                continue;
+            }
+            if (row.style === "h") {
+                ctx.font = fontBold;
+                ctx.fillStyle = "#4fc3f7";
+            } else if (row.style === "b") {
+                ctx.font = fontBold;
+                ctx.fillStyle = "#ebebeb";
+            } else {
+                ctx.font = fontNormal;
+                ctx.fillStyle = "#cfd8dc";
+            }
+            ctx.fillText(row.text, 4, y);
+            y += row.h;
+        }
+    }
+
+    const legalToggle = document.getElementById('legalToggle');
+    const legalBox = document.getElementById('legalBox');
+
+    legalToggle.addEventListener('click', async function() {
+        const isOpen = (legalBox.style.display === 'block');
+        if (isOpen) {
+            legalBox.style.display = 'none';
+        } else {
+            legalBox.style.display = 'block';
+            await renderLegalCanvas();
+            legalBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    });
+
+    window.addEventListener('resize', function() {
+        if (legalBox.style.display === 'block') {
+            renderLegalCanvas();
         }
     });
 })();
